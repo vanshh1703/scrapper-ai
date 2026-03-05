@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+asyncpg
+sqlalchemy
+psycopg2-binary
+redis
+celery
+playwright
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+pydantic-settings
+websockets
+email-validator
