@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     # DATABASE
     DATABASE_URL: str = "sqlite:///priceintel.db"
     
+    @property
+    def SQLALCHEMY_DATABASE_URL(self) -> str:
+        if self.DATABASE_URL.startswith("postgres://"):
+            return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        return self.DATABASE_URL
+    
     # REDIS / CELERY
     REDIS_URL: str = "redis://localhost:6379/0"
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
