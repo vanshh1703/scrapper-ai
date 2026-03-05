@@ -1,5 +1,4 @@
 import { ExternalLink, ShoppingCart, Star } from 'lucide-react';
-import PriceChart from './PriceChart';
 
 export default function ProductCard({ product }: { product: any }) {
     const isCheapest = product.cheapest;
