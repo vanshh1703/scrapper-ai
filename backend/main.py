@@ -34,10 +34,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
-# Fix CORS: Cannot use allow_origins=["*"] with allow_credentials=True
+# Explicit Origins for Production CORS
+origins = [
+    "http://localhost:3000",
+    "https://scrapper-ai-m9ly.vercel.app",
+    "https://scrapper-ai-m9ly-vanshh1703s-projects.vercel.app",
+]
+
+# We use allow_credentials=True because we send the token in the Authorization header
+# but allow_origins must be explicit.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex="https://.*\\.vercel\\.app|http://localhost:3000",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
