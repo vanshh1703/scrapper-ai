@@ -95,6 +95,7 @@ def get_user_sheets(
 @router.get("/sheets/{sheet_id}/export")
 def export_sheet_to_excel(
     sheet_id: int,
+    retailer: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ) -> Any:
@@ -112,7 +113,11 @@ def export_sheet_to_excel(
 
     # Prepare data for Excel
     data = []
-    for row in sheet.rows:
+    filtered_rows = sheet.rows
+    if retailer and retailer != "All":
+        filtered_rows = [r for r in sheet.rows if r.retailer == retailer]
+
+    for row in filtered_rows:
         data.append({
             "Model Name": row.model_name,
             "Brand Channel": row.channel,
