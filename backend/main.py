@@ -10,7 +10,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api.api_v1.api import api_router
 from core.config import settings
-from core.database import engine, Base
+from core.database import engine, Base, get_db
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -18,24 +20,42 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure tables are created on startup
+    logging.basicConfig(level=logging.INFO)
     try:
+        logging.info(f"Connecting to database: {settings.SQLALCHEMY_DATABASE_URL.split('@')[-1]}")
         Base.metadata.create_all(bind=engine)
         logging.info("Database tables created successfully.")
     except Exception as e:
-        logging.error(f"Failed to connect to database: {e}")
+        logging.error(f"CRITICAL: Failed to connect to database or create tables: {e}")
+        # On Render free tier, we want to see this in logs immediately
     yield
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
+# Add explicit origins for production CORS
+origins = [
+    "http://localhost:3000",
+    "https://scrapper-ai-m9ly.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins if os.getenv("RENDER") else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.get("/api/v1/health")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        # Simple query to check DB
+        db.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
 
 @app.get("/")
 def root():
