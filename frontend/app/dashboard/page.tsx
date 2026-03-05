@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { productAPI } from '@/lib/api';
-import { Search, Loader2, LogOut, CheckCircle2, TrendingUp, Grid3X3, Plus } from 'lucide-react';
+import { Search, Loader2, LogOut, CheckCircle2, TrendingUp, Grid3X3 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import PriceSheet from '@/components/PriceSheet';
 
