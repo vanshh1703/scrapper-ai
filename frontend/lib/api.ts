@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
+// Ensure /api/v1 prefix is present if it's a remote URL
+if (API_URL.startsWith('http') && !API_URL.endsWith('/api/v1') && !API_URL.includes('/api/v1/')) {
+    API_URL = API_URL.replace(/\/$/, '') + '/api/v1';
+}
 
 export const api = axios.create({
     baseURL: API_URL,
