@@ -16,6 +16,8 @@ from sqlalchemy import text
 import logging
 import os
 from contextlib import asynccontextmanager
+import traceback
+from fastapi.responses import JSONResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,19 +34,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
-# Add explicit origins for production CORS
-origins = [
-    "http://localhost:3000",
-    "https://scrapper-ai-m9ly.vercel.app",
-]
-
+# Relax CORS for debugging
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if os.getenv("RENDER") else ["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logging.error(f"GLOBAL EXCEPTION: {exc}")
+    logging.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "traceback": "Check server logs for details"}
+    )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

@@ -13,9 +13,16 @@ class Settings(BaseSettings):
     
     @property
     def SQLALCHEMY_DATABASE_URL(self) -> str:
-        if self.DATABASE_URL.startswith("postgres://"):
-            return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        return self.DATABASE_URL
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        
+        # Force SSL for Supabase/Production if on Render
+        if "postgresql" in url and os.getenv("RENDER") and "sslmode=" not in url:
+            separator = "&" if "?" in url else "?"
+            url = f"{url}{separator}sslmode=require"
+            
+        return url
     
     # REDIS / CELERY
     REDIS_URL: str = "redis://localhost:6379/0"
