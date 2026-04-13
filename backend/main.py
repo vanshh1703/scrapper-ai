@@ -35,20 +35,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # Explicit Origins for Production CORS
+# NOTE: "CORS error" in browser often means the backend returned a 5xx/timeout
+# (e.g. Render cold start) rather than a true CORS misconfiguration.
+# The response from Render's infra has no CORS headers, so the browser shows a CORS error.
 origins = [
     "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
     "https://scrapper-ai-m9ly.vercel.app",
     "https://scrapper-ai-m9ly-vanshh1703s-projects.vercel.app",
 ]
 
-# We use allow_credentials=True because we send the token in the Authorization header
-# but allow_origins must be explicit.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 @app.exception_handler(Exception)
